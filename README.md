@@ -67,6 +67,35 @@ public class RotationAuthoring : MonoBehaviour
     }
 }
   ```
+  - 이제 System을 만들어서 로직을 동작시켜보자.
+  ```
+using Unity.Entities;
+using Unity.Transforms;
+
+public partial struct RotationSystem : ISystem
+{
+    public void OnUpdate(ref SystemState state) 
+    {
+        float deltaTime = SystemAPI.Time.DeltaTime;
+
+        // Get Query
+        //var localTransform = SystemAPI.Query<RefRW<LocalTransform>>();
+        //var rotationSpeedComponent = SystemAPI.Query<RefRO<RotationComponentData>>();
+
+        // Get Query
+        foreach (var (transform, speed) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<RotationComponentData>>())
+        {
+            transform.ValueRW = transform.ValueRO.RotateY(speed.ValueRO.RadiansPerSecond * deltaTime);
+        }
+    }
+}
+  ```
+ - 그럼 이제 따로 코딩은 끝. 돌리고 싶은 객체에 Authoring을 Add해주자.
+   ![image](https://github.com/xowjd913/study/assets/25768804/2f78bc21-9218-4191-b444-f3b208df97fc)
+ - 실행 해보면 Scene View에서는 아무런 움직임이 없으나 Game View에서는 자동으로 Rotation이 적용되는걸 확인할 수 있다.
+   ![image](https://github.com/xowjd913/study/assets/25768804/cd3b1cb0-3418-4001-9254-687195917695)
+
+
    [개인적인 의견]
     - 메인 씬에서 기존의 로직대로 돌리고, ECS로 동작해야될 부분은 SubScene에서 동작 시키면 리소스를 벌 수는 있을것같으나, 코드가 난잡해질듯?
       
